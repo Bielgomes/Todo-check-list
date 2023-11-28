@@ -3,21 +3,23 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
-from user.api.serializers import ProfilesSerializers
+from user.api.serializers import ProfileSerializer
 from user.models import Profile
 
 
 class ProfilesViewSet(ModelViewSet):
     queryset = Profile.objects.all()
-    serializer_class = ProfilesSerializers
+    serializer_class = ProfileSerializer
 
     def create(self, request, *args, **kwargs):
-        profile = self.queryset.get(email=request.data['email'])
-        if profile:
+        try:
+            self.queryset.get(email=request.data['email'])
             return Response({'detail': 'This email already exists.'}, status=status.HTTP_409_CONFLICT)
+        except:
+            pass
 
         new_profile = Profile.objects.create_user(**request.data)
-        serializer = ProfilesSerializers(new_profile)
+        serializer = ProfileSerializer(new_profile)
         return Response(serializer.data)
 
     def list(self, request, *args, **kwargs):
@@ -42,7 +44,7 @@ class ProfilesViewSet(ModelViewSet):
 
         profile = self.queryset.get(pk=request.user.id)
 
-        serializer = ProfilesSerializers(profile)
+        serializer = ProfileSerializer(profile)
         return Response(serializer.data)
 
     @action(methods=['PATCH'], detail=False)

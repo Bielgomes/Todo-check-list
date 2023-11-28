@@ -1,9 +1,9 @@
 from rest_framework.serializers import ModelSerializer
 
-from tarefa.models import Task
+from task.models import Task
 
 
-class TasksSerializer(ModelSerializer):
+class TaskSerializer(ModelSerializer):
     class Meta:
         model = Task
         fields = ('id', 'name', 'description', 'status', 'category',

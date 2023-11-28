@@ -6,19 +6,21 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
-from tarefa.api.serializers import TasksSerializer
-from tarefa.models import Task
+from task.api.serializers import TaskSerializer
+from task.models import Task
 
 
 class TasksViewSet(ModelViewSet):
     queryset = Task.objects.all()
-    serializer_class = TasksSerializer
+    serializer_class = TaskSerializer
 
     permission_classes = (permissions.IsAuthenticated,)
 
     def create(self, request, *args, **kwargs):
         new_task = Task.objects.create(**request.data, user=request.user)
-        serializer = TasksSerializer(new_task)
+        new_task.edited_at = None
+
+        serializer = TaskSerializer(new_task)
         return Response(serializer.data)
 
     def list(self, request, *args, **kwargs):
@@ -38,7 +40,7 @@ class TasksViewSet(ModelViewSet):
 
         tasks = tasks[start_index:end_index]
 
-        serializer = TasksSerializer(tasks, many=True)
+        serializer = TaskSerializer(tasks, many=True)
 
         response = {
             'page': page,
@@ -55,12 +57,12 @@ class TasksViewSet(ModelViewSet):
         except Task.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        serializer = TasksSerializer(task)
+        serializer = TaskSerializer(task)
         return Response(serializer.data)
 
     def update(self, request, *args, **kwargs):
         try:
-            task = self.queryset.get(id=kwargs['pk'], user=request.user)
+            self.queryset.get(id=kwargs['pk'], user=request.user)
         except Task.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -72,6 +74,7 @@ class TasksViewSet(ModelViewSet):
         except Task.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
+        request.data['edited_at'] = timezone.now()
         return super().partial_update(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):

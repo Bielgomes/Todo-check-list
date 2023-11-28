@@ -7,7 +7,7 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView
 )
 
-from tarefa.api.viewsets import TasksViewSet
+from task.api.viewsets import TasksViewSet
 from user.api.viewsets import ProfilesViewSet
 
 routes = routers.DefaultRouter()
